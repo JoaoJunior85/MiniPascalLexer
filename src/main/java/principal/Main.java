@@ -9,10 +9,20 @@ public class Main {
 
 
     public static void main(String[] args) {
-
         String codigo = """
-                x idade valor1
-                """ ;
+        program teste;
+
+        var x : integer;
+
+        begin
+
+            x := 10;
+
+            if x >= 5 then
+                write(x);
+
+        end.
+        """;
 
         AnalisadorLexico analisador= new AnalisadorLexico();
 
