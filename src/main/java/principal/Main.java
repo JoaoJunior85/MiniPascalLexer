@@ -1,41 +1,33 @@
-package principal;
+import com.formdev.flatlaf.FlatDarculaLaf;
+import com.formdev.flatlaf.themes.FlatMacLightLaf;
+import gui.TelaPrincipal;
 
-import lexer.AnalisadorLexico;
-import model.Token;
-
-import java.util.List;
+import javax.swing.*;
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
 public class Main {
 
-
     public static void main(String[] args) {
-        String codigo = """
-        program teste;
 
-        var x : integer;
+        try {
 
-        begin
-
-            x := 10;
-
-            if x >= 5 then
-                write(x);
-
-        end.
-        """;
-
-        AnalisadorLexico analisador= new AnalisadorLexico();
-
-        List<Token> tokens=analisador.analisar(codigo);
-
-        for(Token t :tokens){
-            System.out.println(
-                    t.getTipo()
-                    +"->"
-                    +t.getLexema()
+            UIManager.setLookAndFeel(
+                    new FlatMacLightLaf()
             );
 
+        } catch (Exception e) {
+
+            System.out.println(
+                    "Erro ao carregar tema"
+            );
         }
 
+        SwingUtilities.invokeLater(() -> {
+
+            new TelaPrincipal().setVisible(true);
+
+        });
+
     }
+
 }
