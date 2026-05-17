@@ -1,9 +1,8 @@
 import com.formdev.flatlaf.FlatDarculaLaf;
-import com.formdev.flatlaf.themes.FlatMacLightLaf;
+import com.formdev.flatlaf.intellijthemes.FlatArcDarkOrangeIJTheme;
 import gui.TelaPrincipal;
 
 import javax.swing.*;
-import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 
 public class Main {
 
@@ -12,7 +11,7 @@ public class Main {
         try {
 
             UIManager.setLookAndFeel(
-                    new FlatMacLightLaf()
+                    new FlatArcDarkOrangeIJTheme()
             );
 
         } catch (Exception e) {

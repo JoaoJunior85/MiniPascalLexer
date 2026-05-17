@@ -22,6 +22,7 @@ public class AnalisadorLexico {
             "else",
             "while",
             "do",
+            "string",
             "write",
             "writeln",
             "read",

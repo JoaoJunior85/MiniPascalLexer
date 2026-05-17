@@ -36,6 +36,20 @@
             <version>3.3.4</version>
         </dependency>
 
+
+        <!-- Mais modernos -->
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf-intellij-themes</artifactId>
+            <version>3.6</version>
+        </dependency>
+
+
+
+
+
+
+
     </dependencies>
 
 </project>
