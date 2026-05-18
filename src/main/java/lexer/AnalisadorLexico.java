@@ -30,6 +30,7 @@ public class AnalisadorLexico {
             "var",
             "array",
             "integer",
+            "real",
             "boolean",
             "char",
             "true",
@@ -214,14 +215,19 @@ public class AnalisadorLexico {
 
                 continue;
             }
-
             // =================================================
-// NÚMEROS
+// NÚMEROS INTEIROS E REAIS
 // =================================================
 
             if (Character.isDigit(c)) {
 
                 String numero = "";
+
+                boolean ehReal = false;
+
+                // =============================================
+                // PARTE INTEIRA
+                // =============================================
 
                 while (i < codigo.length() &&
                         Character.isDigit(codigo.charAt(i))) {
@@ -231,13 +237,37 @@ public class AnalisadorLexico {
                     i++;
                 }
 
-                // =================================================
-                // VERIFICA SE EXISTEM LETRAS APÓS O NÚMERO
-                // EXEMPLO INVÁLIDO:
-                //
-                // 2da
+                // =============================================
+                // PARTE REAL
+                // EXEMPLO:
+                // 10.5
+                // 3.14
+                // =============================================
+
+                if (i < codigo.length() - 1 &&
+                        codigo.charAt(i) == '.' &&
+                        Character.isDigit(codigo.charAt(i + 1))) {
+
+                    ehReal = true;
+
+                    numero += ".";
+
+                    i++;
+
+                    while (i < codigo.length() &&
+                            Character.isDigit(codigo.charAt(i))) {
+
+                        numero += codigo.charAt(i);
+
+                        i++;
+                    }
+                }
+
+                // =============================================
+                // ERRO:
                 // 10abc
-                // =================================================
+                // 2x
+                // =============================================
 
                 if (i < codigo.length() &&
                         Character.isLetter(codigo.charAt(i))) {
@@ -265,16 +295,33 @@ public class AnalisadorLexico {
                     continue;
                 }
 
-                // RETROCEDE UMA POSIÇÃO
+                // RETROCEDE
                 i--;
 
-                tokens.add(
-                        new Token(
-                                numero,
-                                TipoToken.NUMERO,
-                                linha
-                        )
-                );
+                // =============================================
+                // TOKEN FINAL
+                // =============================================
+
+                if (ehReal) {
+
+                    tokens.add(
+                            new Token(
+                                    numero,
+                                    TipoToken.REAL,
+                                    linha
+                            )
+                    );
+
+                } else {
+
+                    tokens.add(
+                            new Token(
+                                    numero,
+                                    TipoToken.NUMERO,
+                                    linha
+                            )
+                    );
+                }
 
                 continue;
             }

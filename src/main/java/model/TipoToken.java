@@ -8,6 +8,7 @@ public enum TipoToken {
     OPERADOR,
     DELIMITADOR,
     STRING,
-    ERRO
+    ERRO,
+    REAL
 
 }

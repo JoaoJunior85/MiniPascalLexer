@@ -36,6 +36,7 @@ public class TelaPrincipal extends JFrame {
     private JLabel       labelStatus;
     private JLabel       labelCursor;
     private JProgressBar barraProgresso;
+       private JLabel      lblNome;
 
     // colaboradores
     private ColoradorSintatico colorador;
@@ -119,8 +120,7 @@ public class TelaPrincipal extends JFrame {
         barra.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createMatteBorder(0, 0, 1, 0, Tema.BORDA),
                 new EmptyBorder(0, 0, 8, 0)));
-
-        JLabel lblNome = new JLabel("Mini Pascal IDE");
+        lblNome = new JLabel("Mini Pascal IDE");
         lblNome.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblNome.setForeground(Tema.OPCIONAL);
 
@@ -314,15 +314,93 @@ public class TelaPrincipal extends JFrame {
     }
 
     private void trocarTema(boolean escuro) {
+
         try {
-            if (escuro) new FlatArcDarkOrangeIJTheme().setup();
-            else        new FlatArcOrangeIJTheme().setup();
+
+            // =====================================
+            // APLICA CORES DO TEMA
+            // =====================================
+
+            if (escuro) {
+
+                Tema.aplicarTemaEscuro();
+
+                new FlatArcDarkOrangeIJTheme().setup();
+
+            } else {
+
+                Tema.aplicarTemaClaro();
+
+                new FlatArcOrangeIJTheme().setup();
+            }
+
             temaEscuro = escuro;
+
+            // =====================================
+            // APLICA CORES NO EDITOR
+            // =====================================
+
+            areaCodigo.setBackground(Tema.EDITOR);
+
+            areaCodigo.setForeground(Tema.TEXTO_EDITOR);
+
+            areaCodigo.setCaretColor(Tema.TEXTO_EDITOR);
+
+            areaCodigo.setSelectionColor(Tema.SELECAO);
+
+            areaCodigo.setSelectedTextColor(Tema.TEXTO_EDITOR);
+
+            // =====================================
+            // REAPLICA SINTAXE
+            // =====================================
+
+            colorador.aplicar();
+
+            // =====================================
+            // ATUALIZA INTERFACE
+            // =====================================
+
             SwingUtilities.updateComponentTreeUI(this);
-            setStatus("Tema alterado: " + (escuro ? "Escuro" : "Claro"), Tema.OPCIONAL);
-        } catch (Exception ignored) {}
+
+            repaint();
+
+            setStatus(
+                    "Tema alterado: " + (escuro ? "Escuro" : "Claro"),
+                    Tema.OPCIONAL
+            );
+
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
     }
 
+    private void aplicarTemaEditor(boolean escuro) {
+
+        if (escuro) {
+
+            areaCodigo.setBackground(new Color(43, 43, 43));
+            areaCodigo.setForeground(Color.WHITE);
+
+            areaCodigo.setCaretColor(Color.WHITE);
+
+            areaCodigo.setSelectionColor(new Color(60, 110, 180));
+            areaCodigo.setSelectedTextColor(Color.WHITE);
+
+        } else {
+
+            areaCodigo.setBackground(Color.WHITE);
+            areaCodigo.setForeground(Color.BLACK);
+
+            areaCodigo.setCaretColor(Color.BLACK);
+
+            areaCodigo.setSelectionColor(new Color(180, 210, 255));
+            areaCodigo.setSelectedTextColor(Color.BLACK);
+            lblNome.setForeground(Color.BLACK);
+
+        }
+
+        colorador.aplicar();
+    }
     private void ajustarFonte(int delta) { setFonteTamanho(fontSize + delta); }
 
     private void setFonteTamanho(int tamanho) {
