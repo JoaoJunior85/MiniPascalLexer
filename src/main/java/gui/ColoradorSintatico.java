@@ -53,6 +53,7 @@ public class ColoradorSintatico {
                         }
                         case IDENTIFICADOR -> StyleConstants.setForeground(est, Tema.SINTAX_IDENTIFIER);
                         case NUMERO        -> StyleConstants.setForeground(est, Tema.SINTAX_NUMERO);
+                        case REAL          -> StyleConstants.setForeground(est, Tema.SINTAX_NUMERO);
                         case STRING        -> StyleConstants.setForeground(est, Tema.SINTAX_STRING);
                         case OPERADOR      -> StyleConstants.setForeground(est, Tema.SINTAX_OPERADOR);
                         case DELIMITADOR   -> StyleConstants.setForeground(est, Tema.SINTAX_DELIMITADOR);

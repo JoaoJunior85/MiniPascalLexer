@@ -1,3 +1,5 @@
+package principal;
+
 import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.intellijthemes.FlatArcDarkOrangeIJTheme;
 import gui.TelaPrincipal;

@@ -1,13 +1,9 @@
-
-
 package gui;
 
-import com.formdev.flatlaf.FlatDarculaLaf;
 import com.formdev.flatlaf.intellijthemes.FlatArcDarkOrangeIJTheme;
 import com.formdev.flatlaf.intellijthemes.FlatArcOrangeIJTheme;
-import com.formdev.flatlaf.intellijthemes.FlatCyanLightIJTheme;
-import com.formdev.flatlaf.intellijthemes.FlatHiberbeeDarkIJTheme;
-import com.formdev.flatlaf.themes.FlatMacLightLaf;
+import ai.GeminiClient;
+import ai.GeminiConfig;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -21,37 +17,30 @@ import java.awt.event.ActionEvent;
 
 /**
  * Janela principal da Mini Pascal IDE.
- * Atua como orquestrador: delega responsabilidades em classes especializadas
- * dentro do pacote {@code gui}.
  */
 public class TelaPrincipal extends JFrame {
 
-    // componentes principais
     private JTextPane    areaCodigo;
     private JTable       tabelaTokens;
     private JTable       tabelaErros;
     private BotaoAnimado botaoAnalisar;
     private BotaoAnimado botaoLimpar;
+    private BotaoAnimado botaoCorrigirIA;
     private JLabel       labelEstatisticas;
     private JLabel       labelStatus;
     private JLabel       labelCursor;
     private JProgressBar barraProgresso;
-       private JLabel      lblNome;
+    private JLabel       lblNome;
 
-    // colaboradores
     private ColoradorSintatico colorador;
     private ExecutorAnalise    executor;
     private GerenciadorArquivos arquivos;
 
-    // estado
     private boolean temaEscuro = true;
     private int fontSize = 15;
 
-    // =========================================================
-    // BOOTSTRAP
-    // =========================================================
     public static void main(String[] args) {
-        try { new FlatDarculaLaf().setup(); }
+        try { FlatArcDarkOrangeIJTheme.setup(); }
         catch (Exception e) { System.err.println("L&F indisponível."); }
         SwingUtilities.invokeLater(() -> new TelaPrincipal().setVisible(true));
     }
@@ -66,9 +55,6 @@ public class TelaPrincipal extends JFrame {
         registrarAtalhos();
     }
 
-    // =========================================================
-    // CONSTRUÇÃO DA UI
-    // =========================================================
     private void inicializarInterface() {
         setJMenuBar(ConstrutorMenu.construir(criarAcoes()));
 
@@ -87,7 +73,6 @@ public class TelaPrincipal extends JFrame {
 
         setContentPane(raiz);
 
-        // colaboradores que dependem de componentes prontos
         colorador = new ColoradorSintatico(areaCodigo);
         executor  = new ExecutorAnalise(tabelaTokens, tabelaErros, barraProgresso, this::setStatus);
         arquivos  = new GerenciadorArquivos(this, new GerenciadorArquivos.Ouvinte() {
@@ -110,6 +95,7 @@ public class TelaPrincipal extends JFrame {
 
         botaoAnalisar.addActionListener(e -> executor.analisar(areaCodigo.getText()));
         botaoLimpar.addActionListener(e -> limparTudo());
+        botaoCorrigirIA.addActionListener(e -> corrigirComIA());
 
         colorador.aplicar();
     }
@@ -123,8 +109,6 @@ public class TelaPrincipal extends JFrame {
         lblNome = new JLabel("Mini Pascal IDE");
         lblNome.setFont(new Font("Segoe UI", Font.BOLD, 18));
         lblNome.setForeground(Tema.OPCIONAL);
-
-    ;
 
         JPanel painelTexto = new JPanel(new GridLayout(2, 1, 0, 1));
         painelTexto.setOpaque(false);
@@ -146,6 +130,9 @@ public class TelaPrincipal extends JFrame {
         tb.add(FabricaUI.botaoToolbar("📄 Novo",   e -> arquivos.novo()));
         tb.add(FabricaUI.botaoToolbar("📂 Abrir",  e -> arquivos.abrir()));
         tb.add(FabricaUI.botaoToolbar("💾 Salvar", e -> arquivos.salvar(areaCodigo.getText(), false)));
+        botaoCorrigirIA = new BotaoAnimado("🤖 Corrigir IA", Tema.BOTAO_IDLE, Tema.BOTAO_HOVER, Tema.BOTAO_PRESS);
+        botaoCorrigirIA.setPreferredSize(new Dimension(160, 34));
+        tb.add(botaoCorrigirIA);
         tb.add(FabricaUI.separadorVertical());
         tb.add(FabricaUI.botaoToolbar("🧹 Limpar", e -> limparTudo()));
         tb.add(FabricaUI.botaoToolbar("📋 Copiar", e -> areaCodigo.copy()));
@@ -205,7 +192,7 @@ public class TelaPrincipal extends JFrame {
         JPanel painel = new JPanel(new GridLayout(2, 1, 0, 10));
         painel.setOpaque(false);
         tabelaTokens = FabricaUI.criarTabela(new String[]{"Lexema", "Tipo", "Linha"}, false);
-        tabelaErros  = FabricaUI.criarTabela(new String[]{"Mensagem de Erro", "Linha"}, true);
+        tabelaErros  = FabricaUI.criarTabela(new String[]{"Tipo de Erro", "Mensagem de Erro", "Linha"}, true);
         painel.add(FabricaUI.empacotarTabela("Tokens Reconhecidos", tabelaTokens));
         painel.add(FabricaUI.empacotarTabela("Erros Léxicos",       tabelaErros));
         return painel;
@@ -259,9 +246,6 @@ public class TelaPrincipal extends JFrame {
         return rodape;
     }
 
-    // =========================================================
-    // AÇÕES DO MENU
-    // =========================================================
     private ConstrutorMenu.Acoes criarAcoes() {
         ConstrutorMenu.Acoes a = new ConstrutorMenu.Acoes();
         a.novo           = e -> arquivos.novo();
@@ -277,6 +261,7 @@ public class TelaPrincipal extends JFrame {
         a.copiarTokens   = e -> copiarTokensClipboard();
         a.analisar       = e -> executor.analisar(areaCodigo.getText());
         a.limparResultados = e -> executor.limparResultados();
+        a.corrigirIA     = e -> corrigirComIA();
         a.temaEscuro     = e -> trocarTema(true);
         a.temaClaro      = e -> trocarTema(false);
         a.aumentarFonte  = e -> ajustarFonte(+1);
@@ -287,6 +272,7 @@ public class TelaPrincipal extends JFrame {
         a.exemplo3       = e -> carregarExemplo(3);
         a.atalhos        = e -> mostrarAtalhos();
         a.sobre          = e -> mostrarSobre();
+        a.configurar     = e -> mostrarConfiguracaoIA();
         return a;
     }
 
@@ -313,95 +299,102 @@ public class TelaPrincipal extends JFrame {
         setStatus("📋 Tokens copiados para a área de transferência", Tema.SUCESSO);
     }
 
+    private void corrigirComIA() {
+        String apiKey = GeminiConfig.getEffectiveApiKey();
+        if (apiKey == null || apiKey.isBlank()) {
+            int opt = JOptionPane.showConfirmDialog(this,
+                    "Chave da Gemini não encontrada. Deseja configurar agora?",
+                    "Chave Gemini ausente", JOptionPane.YES_NO_OPTION, JOptionPane.WARNING_MESSAGE);
+            if (opt == JOptionPane.YES_OPTION) mostrarConfiguracaoIA();
+            return;
+        }
+
+        String codigo = areaCodigo.getText();
+        if (codigo.isBlank()) {
+            setStatus("O editor está vazio. Digite código antes de solicitar correção.", Tema.ERRO);
+            return;
+        }
+
+        botaoCorrigirIA.setEnabled(false);
+        setStatus("Solicitando correção com Gemini...", Tema.OPCIONAL);
+
+        new SwingWorker<String, Void>() {
+            @Override
+            protected String doInBackground() throws Exception {
+                return GeminiClient.corrigirCodigo(codigo, apiKey);
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    String resposta = get();
+                    if (resposta != null && !resposta.isBlank()) {
+                        areaCodigo.setText(resposta);
+                        setStatus("Correção concluída com IA.", Tema.SUCESSO);
+                    } else {
+                        setStatus("A Gemini retornou resposta vazia.", Tema.ERRO);
+                    }
+                } catch (Exception ex) {
+                    setStatus("Falha ao corrigir com IA.", Tema.ERRO);
+                    JOptionPane.showMessageDialog(TelaPrincipal.this,
+                            "Erro ao acessar a Gemini: " + ex.getMessage(),
+                            "Falha Gemini", JOptionPane.ERROR_MESSAGE);
+                } finally {
+                    botaoCorrigirIA.setEnabled(true);
+                }
+            }
+        }.execute();
+    }
+
+    private void mostrarConfiguracaoIA() {
+        String atual = GeminiConfig.getStoredApiKey();
+        JPanel p = new JPanel(new BorderLayout(6,6));
+        JLabel l = new JLabel("Cole sua API Key da Gemini:");
+        JPasswordField pf = new JPasswordField();
+        if (atual != null) pf.setText(atual);
+        p.add(l, BorderLayout.NORTH);
+        p.add(pf, BorderLayout.CENTER);
+
+        int r = JOptionPane.showConfirmDialog(this, p, "Configurar Gemini",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+        if (r == JOptionPane.OK_OPTION) {
+            String chave = new String(pf.getPassword()).trim();
+            if (chave.isBlank()) GeminiConfig.setStoredApiKey(null);
+            else GeminiConfig.setStoredApiKey(chave);
+            setStatus("Configuração da Gemini atualizada.", Tema.SUCESSO);
+        }
+    }
+
     private void trocarTema(boolean escuro) {
-
         try {
-
-            // =====================================
-            // APLICA CORES DO TEMA
-            // =====================================
-
             if (escuro) {
-
                 Tema.aplicarTemaEscuro();
-
-                new FlatArcDarkOrangeIJTheme().setup();
-
+                FlatArcDarkOrangeIJTheme.setup();
             } else {
-
                 Tema.aplicarTemaClaro();
-
-                new FlatArcOrangeIJTheme().setup();
+                FlatArcOrangeIJTheme.setup();
             }
 
             temaEscuro = escuro;
-
-            // =====================================
-            // APLICA CORES NO EDITOR
-            // =====================================
-
             areaCodigo.setBackground(Tema.EDITOR);
-
             areaCodigo.setForeground(Tema.TEXTO_EDITOR);
-
             areaCodigo.setCaretColor(Tema.TEXTO_EDITOR);
-
             areaCodigo.setSelectionColor(Tema.SELECAO);
-
             areaCodigo.setSelectedTextColor(Tema.TEXTO_EDITOR);
 
-            // =====================================
-            // REAPLICA SINTAXE
-            // =====================================
-
             colorador.aplicar();
-
-            // =====================================
-            // ATUALIZA INTERFACE
-            // =====================================
-
             SwingUtilities.updateComponentTreeUI(this);
-
             repaint();
 
-            setStatus(
-                    "Tema alterado: " + (escuro ? "Escuro" : "Claro"),
-                    Tema.OPCIONAL
-            );
-
+            setStatus("Tema alterado: " + (escuro ? "Escuro" : "Claro"), Tema.OPCIONAL);
         } catch (Exception ex) {
             ex.printStackTrace();
         }
     }
 
-    private void aplicarTemaEditor(boolean escuro) {
-
-        if (escuro) {
-
-            areaCodigo.setBackground(new Color(43, 43, 43));
-            areaCodigo.setForeground(Color.WHITE);
-
-            areaCodigo.setCaretColor(Color.WHITE);
-
-            areaCodigo.setSelectionColor(new Color(60, 110, 180));
-            areaCodigo.setSelectedTextColor(Color.WHITE);
-
-        } else {
-
-            areaCodigo.setBackground(Color.WHITE);
-            areaCodigo.setForeground(Color.BLACK);
-
-            areaCodigo.setCaretColor(Color.BLACK);
-
-            areaCodigo.setSelectionColor(new Color(180, 210, 255));
-            areaCodigo.setSelectedTextColor(Color.BLACK);
-            lblNome.setForeground(Color.BLACK);
-
-        }
-
-        colorador.aplicar();
+    private void ajustarFonte(int delta) { 
+        setFonteTamanho(fontSize + delta); 
     }
-    private void ajustarFonte(int delta) { setFonteTamanho(fontSize + delta); }
 
     private void setFonteTamanho(int tamanho) {
         fontSize = Math.max(9, Math.min(36, tamanho));
@@ -444,9 +437,6 @@ public class TelaPrincipal extends JFrame {
                 "Sobre", JOptionPane.INFORMATION_MESSAGE);
     }
 
-    // =========================================================
-    // ATALHOS GLOBAIS + STATUS
-    // =========================================================
     private void registrarAtalhos() {
         JRootPane rp = getRootPane();
         InputMap im = rp.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW);

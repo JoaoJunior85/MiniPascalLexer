@@ -60,7 +60,7 @@ public class ExecutorAnalise {
             if (tk.getTipo() != TipoToken.ERRO)
                 modTok.addRow(new Object[]{tk.getLexema(), tk.getTipo(), tk.getLinha()});
             else {
-                modErr.addRow(new Object[]{tk.getLexema(), tk.getLinha()});
+                modErr.addRow(new Object[]{extrairTipoErro(tk.getLexema()), tk.getLexema(), tk.getLinha()});
                 erros[0]++;
             }
         });
@@ -72,5 +72,17 @@ public class ExecutorAnalise {
         ((DefaultTableModel) tabelaTokens.getModel()).setRowCount(0);
         ((DefaultTableModel) tabelaErros.getModel()).setRowCount(0);
         status.accept("Resultados limpos", Tema.GUTTER_TEXTO);
+    }
+
+    private String extrairTipoErro(String mensagem) {
+        if (mensagem.equals("Comentário não fechado")) {
+            return "Comentário";
+        } else if (mensagem.equals("String não fechada")) {
+            return "String";
+        } else if (mensagem.matches(".*\\d.*[a-zA-Z].*|.*[a-zA-Z].*\\d.*")) {
+            return "Número Inválido";
+        } else {
+            return "Caractere Inválido";
+        }
     }
 }

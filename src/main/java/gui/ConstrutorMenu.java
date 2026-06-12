@@ -13,7 +13,7 @@ public final class ConstrutorMenu {
     public static class Acoes {
         public ActionListener novo, abrir, salvar, salvarComo, sair;
         public ActionListener recortar, copiar, colar, limparTudo, selecionarTudo, copiarTokens;
-        public ActionListener analisar, limparResultados;
+        public ActionListener analisar, limparResultados, corrigirIA, configurar;
         public ActionListener temaEscuro, temaClaro;
         public ActionListener aumentarFonte, diminuirFonte, resetarFonte;
         public ActionListener exemplo1, exemplo2, exemplo3;
@@ -45,6 +45,7 @@ public final class ConstrutorMenu {
         JMenu mAnalisar = new JMenu("Analisar");
         mAnalisar.setMnemonic('N');
         mAnalisar.add(item("⚙  Executar Análise", "F5", a.analisar));
+        mAnalisar.add(item("🧠  Corrigir com IA", null, a.corrigirIA));
         mAnalisar.add(item("🗑  Limpar Resultados", "F6", a.limparResultados));
 
         JMenu mExibir = new JMenu("Exibir");
@@ -66,6 +67,7 @@ public final class ConstrutorMenu {
 
         JMenu mAjuda = new JMenu("Ajuda");
         mAjuda.setMnemonic('J');
+        mAjuda.add(item("⚙  Configurar Gemini", null, a.configurar));
         mAjuda.add(item("⌨  Atalhos", "F1", a.atalhos));
         mAjuda.add(item("ℹ  Sobre",   null, a.sobre));
 
